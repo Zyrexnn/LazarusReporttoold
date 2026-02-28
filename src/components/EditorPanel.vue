@@ -93,6 +93,77 @@ const triggerDownload = () => {
             <input type="file" accept="image/*" @change="handleImageUpload" class="absolute inset-0 opacity-0 cursor-pointer" />
           </div>
         </div>
+        
+        <div v-if="designState.imageURL || designState.imageBase64 /* Support previous state */" class="mt-4 p-3 bg-zinc-900 border border-zinc-800 rounded space-y-3">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-xs font-medium text-zinc-300">Image Adjustments</span>
+            <button @click="designState.imageSize=100; designState.imagePositionX=50; designState.imagePositionY=50; designState.imageOpacity=80; designState.imageBrightness=75; designState.imageContrast=125; designState.overlayOpacity=60; designState.overlayColor='#000000'" class="text-[10px] text-blue-400 hover:text-blue-300 transition-colors px-2 py-0.5 bg-blue-500/10 rounded">Reset</button>
+          </div>
+          
+          <div>
+            <label class="flex justify-between text-xs text-zinc-400 mb-1">
+              <span>Zoom</span>
+              <span>{{ designState.imageSize }}%</span>
+            </label>
+            <input type="range" v-model="designState.imageSize" min="10" max="300" class="w-full h-1.5 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-blue-500" />
+          </div>
+          
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs text-zinc-400 mb-1">Pan X</label>
+              <input type="range" v-model="designState.imagePositionX" min="0" max="100" class="w-full h-1.5 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-blue-500" />
+            </div>
+            <div>
+              <label class="block text-xs text-zinc-400 mb-1">Pan Y</label>
+              <input type="range" v-model="designState.imagePositionY" min="0" max="100" class="w-full h-1.5 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-blue-500" />
+            </div>
+          </div>
+          
+          <div class="pt-2 mt-2 border-t border-zinc-800 space-y-3">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-xs font-medium text-zinc-300">Lighting & Shadows</span>
+            </div>
+            <div>
+              <label class="flex justify-between text-xs text-zinc-400 mb-1">
+                <span>Image Opacity</span>
+                <span>{{ designState.imageOpacity }}%</span>
+              </label>
+              <input type="range" v-model="designState.imageOpacity" min="0" max="100" class="w-full h-1.5 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-blue-500" />
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="flex justify-between text-xs text-zinc-400 mb-1">
+                  <span>Brightness</span>
+                  <span>{{ designState.imageBrightness }}%</span>
+                </label>
+                <input type="range" v-model="designState.imageBrightness" min="0" max="200" class="w-full h-1.5 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-blue-500" />
+              </div>
+              <div>
+                <label class="flex justify-between text-xs text-zinc-400 mb-1">
+                  <span>Contrast</span>
+                  <span>{{ designState.imageContrast }}%</span>
+                </label>
+                <input type="range" v-model="designState.imageContrast" min="0" max="200" class="w-full h-1.5 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-blue-500" />
+              </div>
+            </div>
+            
+            <div class="pt-2 border-t border-zinc-800">
+              <label class="flex justify-between text-xs text-zinc-400 mb-1">
+                <span>Shadow Overlay Intensity</span>
+                <span>{{ designState.overlayOpacity }}%</span>
+              </label>
+              <input type="range" v-model="designState.overlayOpacity" min="0" max="100" class="w-full h-1.5 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-blue-500" />
+              
+              <div class="mt-2 flex items-center justify-between">
+                <span class="text-xs text-zinc-400">Shadow Color</span>
+                <div class="flex items-center gap-2">
+                  <span class="text-[10px] text-zinc-500">{{ designState.overlayColor.toUpperCase() }}</span>
+                  <input type="color" v-model="designState.overlayColor" class="w-6 h-6 rounded shrink-0 cursor-pointer bg-transparent border-0 p-0" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 

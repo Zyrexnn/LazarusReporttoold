@@ -84,19 +84,39 @@ const handleDownload = async () => {
     // Give the DOM a tiny fraction of a second to recalculate before capturing
     await new Promise(resolve => setTimeout(resolve, 50));
     
-    const dataUrl = await htmlToImage.toPng(exportArea.value, {
+    const blob = await htmlToImage.toBlob(exportArea.value, {
       quality: 0.95,
       cacheBust: true,
-      pixelRatio: 1 // Force 1080x1350 without scaling up by Retina displays
+      pixelRatio: 2 // Force 2x resolution for HD export
     })
     
     // 3. Immediatley restore the original scale transform
     exportArea.value.style.transform = originalTransform;
     
+    const fileName = `LazarusReport-${Date.now()}.png`
+    const file = new File([blob], fileName, { type: 'image/png' })
+    
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({
+          files: [file],
+          title: 'Lazarus Report Design',
+        })
+        return
+      } catch (err) {
+        console.log('Share canceled or failed', err)
+      }
+    }
+    
+    const objectUrl = URL.createObjectURL(blob)
     const link = document.createElement('a')
-    link.download = `LazarusReport-${Date.now()}.png`
-    link.href = dataUrl
+    link.download = fileName
+    link.href = objectUrl
     link.click()
+    
+    setTimeout(() => {
+      URL.revokeObjectURL(objectUrl)
+    }, 1000)
   } catch (err) {
     console.error('Export failed', err)
     
@@ -199,18 +219,23 @@ const endDrag = () => {
         class="absolute top-0 left-0 bg-zinc-900 overflow-hidden"
         :style="{ width: '1080px', height: '1350px', transform: `scale(${scaleFactor})`, transformOrigin: 'top left' }"
       >
-        <!-- Background Image with Dark Gradient Overlay -->
-        <div class="absolute inset-0 bg-black">
+        <div class="absolute inset-0" :style="{ backgroundColor: designState.overlayColor }">
           <img 
             v-if="previewImageBase64" 
             :src="previewImageBase64" 
-            class="w-full h-full object-cover opacity-80 mix-blend-luminosity brightness-75 contrast-125" 
+            class="w-full h-full object-cover mix-blend-luminosity" 
+            :style="{
+              objectPosition: `${designState.imagePositionX}% ${designState.imagePositionY}%`,
+              transform: `scale(${designState.imageSize / 100})`,
+              opacity: designState.imageOpacity / 100,
+              filter: `brightness(${designState.imageBrightness}%) contrast(${designState.imageContrast}%)`
+            }"
           />
-          <div v-else class="w-full h-full bg-zinc-900 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-zinc-800 to-black"></div>
+          <div v-else class="w-full h-full bg-zinc-900 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-zinc-800 to-black" :style="{ opacity: designState.imageOpacity / 100 }"></div>
           
           <!-- Ultra smooth premium gradient overlay: double layered for maximum text legibility without ruining image -->
-          <div class="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent" style="height: 70%; top: auto; bottom: 0;"></div>
-          <div class="absolute inset-x-0 bottom-[140px] h-[600px] bg-gradient-to-t from-black/60 to-transparent"></div>
+          <div class="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent" :style="{ opacity: designState.overlayOpacity / 100, height: '70%', top: 'auto', bottom: 0 }"></div>
+          <div class="absolute inset-x-0 bottom-[140px] h-[600px] bg-gradient-to-t" :style="{ opacity: designState.overlayOpacity / 100, backgroundImage: `linear-gradient(to top, ${designState.overlayColor}99, transparent)` }"></div>
         </div>
 
         <!-- Custom Draggable Logo -->

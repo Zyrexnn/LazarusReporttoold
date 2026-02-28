@@ -8,17 +8,27 @@ const defaultState = {
   source: '',
   imageURL: '',
   articleUrl: '',
+  imageSize: 100,
+  imagePositionX: 50,
+  imagePositionY: 50,
+  imageOpacity: 80,
+  imageBrightness: 75,
+  imageContrast: 125,
+  overlayColor: '#000000',
+  overlayOpacity: 60,
   logoBase64: '',
   logoX: 864, // Default near top right: 1080 - 150(logo default size) - 64(padding)
   logoY: 140, // Default top padding
-  logoSize: 100, // default max-height in pixels
+  logoSize: 300, // default max-height in pixels
   // style
-  accentColor: '#ef4444', // Red-500 default looks very news-like
-  fontSizeTitle: 64,
-  fontSizeDesc: 28,
+  accentColor: '#c5a32b', // Custom requested color
+  fontSizeTitle: 55,
+  fontSizeDesc: 25,
   // app state
   apiKey: import.meta.env.VITE_NEWS_API_KEY || ''
 };
+
+
 
 // initialize from localStorage for persistent fields
 const savedApiKey = localStorage.getItem('lazarus_api_key') || import.meta.env.VITE_NEWS_API_KEY || '';

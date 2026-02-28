@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import NewsFeed from './components/NewsFeed.vue'
 import EditorPanel from './components/EditorPanel.vue'
 import LivePreview from './components/LivePreview.vue'
-import { LayoutTemplate, Edit3, Image as ImageIcon, X } from 'lucide-vue-next'
+import { LayoutTemplate, Edit3, Image as ImageIcon, X, Download } from 'lucide-vue-next'
 
 const activeTab = ref('preview') // 'news', 'editor', 'preview'
 
@@ -14,6 +14,10 @@ const toggleTab = (tab) => {
     activeTab.value = tab
   }
 }
+
+const triggerDownload = () => {
+  window.dispatchEvent(new CustomEvent('lazarus-download'))
+}
 </script>
 
 <template>
@@ -22,7 +26,7 @@ const toggleTab = (tab) => {
     <!-- DESKTOP: Col 1 News Feed -->
     <!-- MOBILE: Bottom Sheet -->
     <div 
-      class="fixed md:relative inset-x-0 bottom-0 md:inset-auto z-40 md:z-auto transition-transform duration-300 w-full md:w-1/4 h-[85vh] md:h-screen border-t md:border-t-0 border-r-0 md:border-r border-zinc-800 bg-zinc-900 flex flex-col rounded-t-2xl md:rounded-none shadow-[0_-10px_40px_rgba(0,0,0,0.5)] md:shadow-none"
+      class="fixed md:relative inset-x-0 bottom-0 md:inset-auto z-40 md:z-auto transition-transform duration-300 w-full md:w-1/4 h-[80vh] md:h-screen border-t md:border-t-0 border-r-0 md:border-r border-zinc-800 bg-zinc-900 flex flex-col rounded-t-2xl md:rounded-none shadow-[0_-10px_40px_rgba(0,0,0,0.5)] md:shadow-none"
       :class="[
         activeTab === 'news' ? 'translate-y-0' : 'translate-y-full md:translate-y-0',
         'md:flex'
@@ -40,14 +44,28 @@ const toggleTab = (tab) => {
     </div>
 
     <!-- MAIN PREVIEW (Always visible in bg on mobile, Col 2 on desktop) -->
-    <div class="flex-1 h-screen bg-zinc-950 flex flex-col items-center justify-center p-4 pb-20 md:pb-4 overflow-hidden relative z-10 w-full order-first md:order-none">
+    <div 
+      class="flex-1 h-screen bg-zinc-950 flex flex-col items-center justify-center p-4 overflow-hidden relative z-10 w-full order-first md:order-none transition-all duration-300"
+      :class="[
+        activeTab === 'editor' ? 'pb-[55vh] md:pb-4' : (activeTab === 'news' ? 'pb-[80vh] md:pb-4' : 'pb-[80px] md:pb-4')
+      ]"
+      >
       <LivePreview />
+      
+      <!-- Mobile Floating Download Button -->
+      <button 
+        v-if="activeTab === 'preview'"
+        @click="triggerDownload" 
+        class="md:hidden absolute top-6 right-6 z-50 bg-emerald-600 hover:bg-emerald-700 text-white p-3.5 rounded-full shadow-[0_4px_24px_rgba(16,185,129,0.5)] flex items-center justify-center transition-transform active:scale-90"
+      >
+        <Download class="w-6 h-6" />
+      </button>
     </div>
 
     <!-- DESKTOP: Col 3 Editor Panel -->
     <!-- MOBILE: Bottom Sheet -->
     <div 
-      class="fixed md:relative inset-x-0 bottom-0 md:inset-auto z-40 md:z-auto transition-transform duration-300 w-full md:w-1/3 h-[85vh] md:h-screen border-t md:border-t-0 border-l-0 md:border-l border-zinc-800 bg-zinc-900 flex flex-col rounded-t-2xl md:rounded-none shadow-[0_-10px_40px_rgba(0,0,0,0.5)] md:shadow-none"
+      class="fixed md:relative inset-x-0 bottom-0 md:inset-auto z-40 md:z-auto transition-transform duration-300 w-full md:w-1/3 h-[55vh] md:h-screen border-t md:border-t-0 border-l-0 md:border-l border-zinc-800 bg-zinc-900 flex flex-col rounded-t-2xl md:rounded-none shadow-[0_-10px_40px_rgba(0,0,0,0.5)] md:shadow-none"
       :class="[
         activeTab === 'editor' ? 'translate-y-0' : 'translate-y-full md:translate-y-0',
         'md:flex'
