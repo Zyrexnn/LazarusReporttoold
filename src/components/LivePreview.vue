@@ -94,19 +94,6 @@ const handleDownload = async () => {
     exportArea.value.style.transform = originalTransform;
     
     const fileName = `LazarusReport-${Date.now()}.png`
-    const file = new File([blob], fileName, { type: 'image/png' })
-    
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      try {
-        await navigator.share({
-          files: [file],
-          title: 'Lazarus Report Design',
-        })
-        return
-      } catch (err) {
-        console.log('Share canceled or failed', err)
-      }
-    }
     
     const objectUrl = URL.createObjectURL(blob)
     const link = document.createElement('a')
