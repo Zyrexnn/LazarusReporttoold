@@ -15,15 +15,31 @@ const handleLogoUpload = (e) => {
 const handleImageUpload = (e) => {
   const file = e.target.files[0]
   if (!file) return
-  const reader = new FileReader()
-  reader.onload = (event) => {
-    designState.imageURL = event.target.result
+
+  if (file.type.startsWith('video/')) {
+    const url = URL.createObjectURL(file)
+    designState.videoBgURL = url
+    designState.imageURL = '' // Clear image if video is used
+  } else {
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      designState.imageURL = event.target.result
+      designState.videoBgURL = '' // Clear video if image is used
+    }
+    reader.readAsDataURL(file)
   }
-  reader.readAsDataURL(file)
 }
 
 const triggerDownload = () => {
   window.dispatchEvent(new CustomEvent('lazarus-download'))
+}
+
+const triggerVideoDownload = () => {
+  window.dispatchEvent(new CustomEvent('lazarus-video-download'))
+}
+
+const triggerPreviewPlay = () => {
+  window.dispatchEvent(new CustomEvent('lazarus-play-preview'))
 }
 </script>
 
@@ -89,12 +105,12 @@ const triggerDownload = () => {
           />
           <div class="relative w-full h-9 bg-zinc-900 border border-zinc-700 border-dashed rounded flex items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-zinc-800 transition-colors overflow-hidden">
             <UploadCloud class="w-4 h-4 text-zinc-400 mr-2" />
-            <span class="text-xs text-zinc-400">Upload Local Image</span>
-            <input type="file" accept="image/*" @change="handleImageUpload" class="absolute inset-0 opacity-0 cursor-pointer" />
+            <span class="text-xs text-zinc-400">Upload Media (Image / Video)</span>
+            <input type="file" accept="image/*,video/mp4,video/webm" @change="handleImageUpload" class="absolute inset-0 opacity-0 cursor-pointer" />
           </div>
         </div>
         
-        <div v-if="designState.imageURL || designState.imageBase64 /* Support previous state */" class="mt-4 p-3 bg-zinc-900 border border-zinc-800 rounded space-y-3">
+        <div v-if="designState.imageURL || designState.videoBgURL || designState.imageBase64 /* Support previous state */" class="mt-4 p-3 bg-zinc-900 border border-zinc-800 rounded space-y-3">
           <div class="flex items-center justify-between mb-1">
             <span class="text-xs font-medium text-zinc-300">Image Adjustments</span>
             <button @click="designState.imageSize=100; designState.imagePositionX=50; designState.imagePositionY=50; designState.imageOpacity=80; designState.imageBrightness=75; designState.imageContrast=125; designState.overlayOpacity=60; designState.overlayColor='#000000'" class="text-[10px] text-blue-400 hover:text-blue-300 transition-colors px-2 py-0.5 bg-blue-500/10 rounded">Reset</button>
@@ -209,9 +225,21 @@ const triggerDownload = () => {
     </section>
   </div>
 
-  <div class="p-4 border-t border-zinc-800 shrink-0">
-    <button @click="triggerDownload" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded px-4 py-3 font-bold flex items-center justify-center gap-2 transition-colors focus:ring-4 focus:ring-emerald-900">
-      <Download class="w-5 h-5" /> Download Design (PNG)
+  <div class="p-4 border-t border-zinc-800 shrink-0 space-y-3">
+    
+    <div class="flex items-center justify-between gap-3">
+       <button @click="triggerPreviewPlay" class="w-1/3 bg-zinc-800 hover:bg-zinc-700 text-white rounded px-3 py-2.5 font-bold flex items-center justify-center gap-2 transition-colors focus:ring-2 focus:ring-zinc-600 text-sm">
+         <span class="w-3 h-3 bg-white ml-1 style-[clip-path:polygon(0_0,0_100%,100%_50%)] inline-block relative -top-[1px]"></span>
+         Play
+       </button>
+
+       <button @click="triggerDownload" class="w-2/3 bg-zinc-800 hover:bg-zinc-700 text-white rounded px-4 py-2.5 font-bold flex items-center justify-center gap-2 transition-colors focus:ring-2 focus:ring-zinc-600 border border-zinc-700 hover:border-zinc-600 text-sm">
+         <Download class="w-4 h-4" /> Image (PNG)
+       </button>
+    </div>
+
+    <button @click="triggerVideoDownload" :disabled="designState.isExportingVideo" class="w-full bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white rounded px-4 py-3 font-bold flex items-center justify-center gap-2 transition-colors focus:ring-4 focus:ring-red-900 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
+      <Download class="w-5 h-5" /> Export Video (MP4)
     </button>
   </div>
 </template>

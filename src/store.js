@@ -7,6 +7,7 @@ const defaultState = {
   // imagery
   source: '',
   imageURL: '',
+  videoBgURL: '', // New property for video background
   articleUrl: '',
   imageSize: 100,
   imagePositionX: 50,
@@ -25,7 +26,11 @@ const defaultState = {
   fontSizeTitle: 55,
   fontSizeDesc: 25,
   // app state
-  apiKey: import.meta.env.VITE_NEWS_API_KEY || ''
+  apiKey: import.meta.env.VITE_NEWS_API_KEY || '',
+  // video export state
+  videoDuration: 5,
+  videoFPS: 30,
+  isExportingVideo: false
 };
 
 
