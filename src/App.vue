@@ -64,6 +64,11 @@ const triggerDownload = () => {
 
     <!-- DESKTOP: Col 3 Editor Panel -->
     <!-- MOBILE: Bottom Sheet -->
+
+   <div > 
+     
+  </div>
+
     <div 
       class="fixed md:relative inset-x-0 bottom-0 md:inset-auto z-40 md:z-auto transition-transform duration-300 w-full md:w-1/3 h-[55vh] md:h-screen border-t md:border-t-0 border-l-0 md:border-l border-zinc-800 bg-zinc-900 flex flex-col rounded-t-2xl md:rounded-none shadow-[0_-10px_40px_rgba(0,0,0,0.5)] md:shadow-none"
       :class="[

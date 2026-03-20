@@ -255,13 +255,16 @@ const handleVideoDownload = async () => {
             bgVideoElement.value.currentTime = (frame / designState.videoFPS);
         }
 
-        await new Promise(resolve => requestAnimationFrame(resolve)); // Wait for Vue to apply styles
-        await new Promise(resolve => setTimeout(resolve, 30)); // Delay for dom layout stabilization
+        // Double requestAnimationFrame forces the browser to actually paint the new styles before we capture
+        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))); 
+        
+        // Safety net delay to ensure heavy layout shifts (if any) are settled
+        await new Promise(resolve => setTimeout(resolve, 5)); 
 
         const canvas = await htmlToImage.toCanvas(exportArea.value, {
             quality: 0.9,
             cacheBust: true,
-            pixelRatio: 1 // Optimize to 1 for high performance video frames
+            pixelRatio: 1 // Keep at 1 for rendering speed & stutter prevention
         });
         
         const videoFrame = new VideoFrame(canvas, { timestamp: (frame / designState.videoFPS) * 1_000_000 });

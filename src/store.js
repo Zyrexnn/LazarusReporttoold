@@ -2,8 +2,8 @@ import { reactive, watch } from 'vue';
 
 const defaultState = {
   // text
-  title: '',
-  description: '',
+  title: null,
+  description: null,
   // imagery
   source: '',
   imageURL: '',
@@ -32,8 +32,6 @@ const defaultState = {
   videoFPS: 30,
   isExportingVideo: false
 };
-
-
 
 // initialize from localStorage for persistent fields
 const savedApiKey = localStorage.getItem('lazarus_api_key') || import.meta.env.VITE_NEWS_API_KEY || '';

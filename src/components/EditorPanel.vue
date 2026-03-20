@@ -72,7 +72,7 @@ const triggerPreviewPlay = () => {
           rows="3"
           class="w-full bg-zinc-950 border border-zinc-700 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500 transition-colors resize-none text-white"
         ></textarea>
-        <div class="text-right text-xs text-zinc-500 mt-1">{{ designState.title.length }} chars</div>
+        <div class="text-right text-xs text-zinc-500 mt-1">{{ designState.title?.length || 0 }} chars</div>
       </div>
 
       <div>
@@ -82,7 +82,7 @@ const triggerPreviewPlay = () => {
           rows="4"
           class="w-full bg-zinc-950 border border-zinc-700 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500 transition-colors resize-none text-white"
         ></textarea>
-        <div class="text-right text-xs text-zinc-500 mt-1">{{ designState.description.length }} chars</div>
+        <div class="text-right text-xs text-zinc-500 mt-1">{{ designState.description?.length || 0 }} chars</div>
       </div>
 
       <div>
@@ -227,19 +227,29 @@ const triggerPreviewPlay = () => {
 
   <div class="p-4 border-t border-zinc-800 shrink-0 space-y-3">
     
-    <div class="flex items-center justify-between gap-3">
-       <button @click="triggerPreviewPlay" class="w-1/3 bg-zinc-800 hover:bg-zinc-700 text-white rounded px-3 py-2.5 font-bold flex items-center justify-center gap-2 transition-colors focus:ring-2 focus:ring-zinc-600 text-sm">
-         <span class="w-3 h-3 bg-white ml-1 style-[clip-path:polygon(0_0,0_100%,100%_50%)] inline-block relative -top-[1px]"></span>
-         Play
-       </button>
+    <div class="space-y-4">
+      <div class="flex items-center justify-between gap-3">
+         <button @click="triggerPreviewPlay" class="w-1/3 bg-zinc-800 hover:bg-zinc-700 text-white rounded px-3 py-2.5 font-bold flex items-center justify-center gap-2 transition-colors focus:ring-2 focus:ring-zinc-600 text-sm">
+           <span class="w-3 h-3 bg-white ml-1 style-[clip-path:polygon(0_0,0_100%,100%_50%)] inline-block relative -top-[1px]"></span>
+           Play
+         </button>
 
-       <button @click="triggerDownload" class="w-2/3 bg-zinc-800 hover:bg-zinc-700 text-white rounded px-4 py-2.5 font-bold flex items-center justify-center gap-2 transition-colors focus:ring-2 focus:ring-zinc-600 border border-zinc-700 hover:border-zinc-600 text-sm">
-         <Download class="w-4 h-4" /> Image (PNG)
-       </button>
+         <button @click="triggerDownload" class="w-2/3 bg-zinc-800 hover:bg-zinc-700 text-white rounded px-4 py-2.5 font-bold flex items-center justify-center gap-2 transition-colors focus:ring-2 focus:ring-zinc-600 border border-zinc-700 hover:border-zinc-600 text-sm">
+           <Download class="w-4 h-4" /> Image (PNG)
+         </button>
+      </div>
+      
+      <div class="pt-3 border-t border-zinc-800">
+        <label class="flex justify-between text-xs text-zinc-400 mb-2 font-semibold">
+          <span>Video Duration</span>
+          <span class="text-white">{{ designState.videoDuration }} Secs</span>
+        </label>
+        <input type="range" v-model="designState.videoDuration" min="2" max="30" class="w-full h-2 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-red-500 mb-3" />
+
+        <button @click="triggerVideoDownload" :disabled="designState.isExportingVideo" class="w-full bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white rounded px-4 py-3 font-bold flex items-center justify-center gap-2 transition-colors focus:ring-4 focus:ring-red-900 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
+          <Download class="w-5 h-5" /> Export Video (MP4)
+        </button>
+      </div>
     </div>
-
-    <button @click="triggerVideoDownload" :disabled="designState.isExportingVideo" class="w-full bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white rounded px-4 py-3 font-bold flex items-center justify-center gap-2 transition-colors focus:ring-4 focus:ring-red-900 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
-      <Download class="w-5 h-5" /> Export Video (MP4)
-    </button>
   </div>
 </template>
