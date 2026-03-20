@@ -74,6 +74,10 @@ watch(() => designState.imageURL, (newUrl) => {
   loadBase64Image(newUrl)
 }, { immediate: true })
 
+watch([() => designState.canvasWidth, () => designState.canvasHeight], () => {
+  updateScale()
+})
+
 const getAnimatedStyle = (type) => {
   const t = videoProgress.value;
   const MathMax = Math.max;
