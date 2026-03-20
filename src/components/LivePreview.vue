@@ -20,7 +20,10 @@ const updateScale = () => {
     const parentWidth = previewScaler.value.parentElement.clientWidth
     const parentHeight = previewScaler.value.parentElement.clientHeight
     
-    const targetRatio = 4 / 5
+    const targetWidth = designState.canvasWidth
+    const targetHeight = designState.canvasHeight
+    const targetRatio = targetWidth / targetHeight
+    
     const availableWidth = parentWidth - 32
     const availableHeight = parentHeight - 32
     
@@ -35,7 +38,7 @@ const updateScale = () => {
     previewScaler.value.style.width = `${finalWidth}px`
     previewScaler.value.style.height = `${finalHeight}px`
     
-    scaleFactor.value = finalWidth / 1080
+    scaleFactor.value = finalWidth / targetWidth
   }
 }
 
@@ -205,8 +208,8 @@ const handleVideoDownload = async () => {
       target: new Mp4Muxer.ArrayBufferTarget(),
       video: {
         codec: 'avc',
-        width: 1080,
-        height: 1350,
+        width: designState.canvasWidth,
+        height: designState.canvasHeight,
       },
       audio: audioBuffer ? {
         codec: 'aac',
@@ -223,8 +226,8 @@ const handleVideoDownload = async () => {
     
     videoEncoder.configure({
         codec: 'avc1.640028',
-        width: 1080,
-        height: 1350,
+        width: designState.canvasWidth,
+        height: designState.canvasHeight,
         bitrate: 5_000_000,
         framerate: designState.videoFPS
     });
@@ -415,8 +418,8 @@ const onDrag = (e) => {
   const newX = dragStart.value.initLogoX + (dx / scaleFactor.value)
   const newY = dragStart.value.initLogoY + (dy / scaleFactor.value)
   
-  const maxX = 1080 - 20
-  const maxY = 1350 - 20
+  const maxX = designState.canvasWidth - 20
+  const maxY = designState.canvasHeight - 20
   
   designState.logoX = Math.max(0, Math.min(newX, maxX))
   designState.logoY = Math.max(0, Math.min(newY, maxY))
@@ -454,8 +457,8 @@ const endDrag = () => {
         id="export-area"
         class="absolute top-0 left-0 bg-zinc-900 overflow-hidden"
         :style="{ 
-          width: '1080px', 
-          height: '1350px', 
+          width: `${designState.canvasWidth}px`, 
+          height: `${designState.canvasHeight}px`, 
           transform: isExportVideoProcess ? 'none' : `scale(${scaleFactor})`, 
           transformOrigin: 'top left' 
         }"
@@ -516,18 +519,18 @@ const endDrag = () => {
               class="font-black text-white uppercase leading-[1.05] tracking-tight mb-6 drop-shadow-[0_4px_24px_rgba(0,0,0,0.9)] origin-bottom" 
               :style="getAnimatedStyle('title')"
             >
-              {{ designState.title || 'BREAKING NEWS TITLE GOES HERE. IMPACTFUL AND DIRECT.' }}
+              {{ designState.title }}
             </h1>
           </div>
           
-          <div class="w-24 h-1.5 rounded-full mb-6 shadow-lg shadow-black/50" :style="getAnimatedStyle('line')"></div>
+          <div v-if="designState.title && designState.description" class="w-24 h-1.5 rounded-full mb-6 shadow-lg shadow-black/50" :style="getAnimatedStyle('line')"></div>
           
           <div class="overflow-hidden">
              <p 
                class="text-zinc-200 font-medium leading-relaxed drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)] max-w-[95%]"
                :style="getAnimatedStyle('desc')"
              >
-               {{ designState.description || 'This provides more context about the news article. It is highly legible against the ultra-dark gradient background, using a tight typographic hierarchy to ensure professional presentation.' }}
+               {{ designState.description }}
              </p>
           </div>
 

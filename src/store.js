@@ -2,10 +2,10 @@ import { reactive, watch } from 'vue';
 
 const defaultState = {
   // text
-  title: null,
-  description: null,
+  title: 'BREAKING NEWS TITLE GOES HERE. IMPACTFUL AND DIRECT.',
+  description: 'This provides more context about the news article. It is highly legible against the ultra-dark gradient background, using a tight typographic hierarchy to ensure professional presentation.',
   // imagery
-  source: '',
+  source: 'BREAKING',
   imageURL: '',
   videoBgURL: '', // New property for video background
   articleUrl: '',
@@ -25,7 +25,9 @@ const defaultState = {
   accentColor: '#c5a32b', // Custom requested color
   fontSizeTitle: 55,
   fontSizeDesc: 25,
-  // app state
+  canvasWidth: 1080,
+  canvasHeight: 1350,
+  canvasRatio: '4:5',
   apiKey: import.meta.env.VITE_NEWS_API_KEY || '',
   // video export state
   videoDuration: 5,

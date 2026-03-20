@@ -41,6 +41,22 @@ const triggerVideoDownload = () => {
 const triggerPreviewPlay = () => {
   window.dispatchEvent(new CustomEvent('lazarus-play-preview'))
 }
+
+const setCanvasSize = (w, h, ratio) => {
+  designState.canvasWidth = w
+  designState.canvasHeight = h
+  designState.canvasRatio = ratio
+}
+
+const getRatioLabel = (w, h) => {
+  const ws = String(w)
+  const hs = String(h)
+  if (ws === '1080' && hs === '1350') return 'Portrait (4:5)'
+  if (ws === '1080' && hs === '1080') return 'Square (1:1)'
+  if (ws === '1920' && hs === '1080') return 'Landscape (16:9)'
+  if (ws === '1080' && hs === '1920') return 'Story (9:16)'
+  return `${w}:${h}`
+}
 </script>
 
 <template>
@@ -56,11 +72,55 @@ const triggerPreviewPlay = () => {
       class="text-xs flex items-center gap-1.5 text-zinc-400 hover:text-blue-400 bg-zinc-900 hover:bg-zinc-800 px-2 py-1.5 rounded transition-colors border border-zinc-800 hover:border-zinc-700"
       title="Read original article"
     >
-      <ExternalLink class="w-3 h-3" /> Read Original
     </a>
   </div>
 
   <div class="p-4 space-y-6 flex-1">
+    <!-- Canvas Size Section -->
+    <section class="space-y-4">
+      <h3 class="text-sm font-semibold text-zinc-400 uppercase tracking-wider">Canvas Size</h3>
+      
+      <div class="grid grid-cols-2 gap-2">
+        <button 
+          v-for="size in [
+            { w: 1080, h: 1350, r: '4:5' },
+            { w: 1080, h: 1080, r: '1:1' },
+            { w: 1920, h: 1080, r: '16:9' },
+            { w: 1080, h: 1920, r: '9:16' }
+          ]"
+          :key="size.r"
+          @click="setCanvasSize(size.w, size.h, size.r)"
+          class="px-3 py-2 rounded text-xs font-medium transition-colors border"
+          :class="designState.canvasWidth === size.w && designState.canvasHeight === size.h ? 'bg-blue-600 border-blue-500 text-white' : 'bg-zinc-900 border-zinc-700 text-zinc-400 hover:border-zinc-500'"
+        >
+          {{ getRatioLabel(size.w, size.h) }}
+        </button>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs text-zinc-400 mb-1">Width (px)</label>
+          <input 
+            v-model.number="designState.canvasWidth" 
+            type="number"
+            class="w-full bg-zinc-950 border border-zinc-700 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500 transition-colors text-white"
+            @input="designState.canvasRatio = 'custom'"
+          />
+        </div>
+        <div>
+          <label class="block text-xs text-zinc-400 mb-1">Height (px)</label>
+          <input 
+            v-model.number="designState.canvasHeight" 
+            type="number"
+            class="w-full bg-zinc-950 border border-zinc-700 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500 transition-colors text-white"
+            @input="designState.canvasRatio = 'custom'"
+          />
+        </div>
+      </div>
+    </section>
+
+    <hr class="border-zinc-800" />
+
     <!-- Content Section -->
     <section class="space-y-4">
       <h3 class="text-sm font-semibold text-zinc-400 uppercase tracking-wider">Content</h3>
