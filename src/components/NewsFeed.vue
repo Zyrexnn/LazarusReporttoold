@@ -1,33 +1,81 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { designState } from '../store'
-import { Search, Loader2, Key, Newspaper, Clock, ArrowUpRight } from 'lucide-vue-next'
+import { Search, Loader2, Key, Newspaper, Clock, ArrowUpRight, Globe, Filter } from 'lucide-vue-next'
 
 const loading = ref(false)
 const error = ref('')
 const articles = ref([])
-const searchQuery = ref('') // New ref for topic searching
+
+onMounted(() => {
+  fetchNews()
+})
+
+watch(() => designState.apiProvider, () => {
+  fetchNews()
+})
+
+watch(() => designState.newsCategory, () => {
+  fetchNews()
+})
+
+const providers = [
+  { value: 'newsapi', label: 'NewsAPI.org (Default)' },
+  { value: 'gnews', label: 'GNews.io (Geopolitics/World)' }
+];
+
+const categories = [
+  { value: 'general', label: 'General' },
+  { value: 'world', label: 'World / Geopolitics (GNews)' },
+  { value: 'business', label: 'Business' },
+  { value: 'technology', label: 'Technology' },
+  { value: 'entertainment', label: 'Entertainment' },
+  { value: 'sports', label: 'Sports' },
+  { value: 'science', label: 'Science' },
+  { value: 'health', label: 'Health' }
+];
 
 const fetchNews = async () => {
   if (!designState.apiKey) {
-    error.value = 'API Key is required'
+    error.value = 'API Key is required from .env file (VITE_NEWS_API_KEY)'
     return
   }
   loading.value = true
   error.value = ''
   try {
-    // If user searches for a topic, use 'everything' sorted by newest.
-    // Otherwise, default to 'top-headlines'.
-    const url = searchQuery.value.trim()
-      ? `https://newsapi.org/v2/everything?q=${encodeURIComponent(searchQuery.value.trim())}&sortBy=publishedAt&language=en&apiKey=${designState.apiKey}`
-      : `https://newsapi.org/v2/top-headlines?language=en&apiKey=${designState.apiKey}`
+    let url = ''
+    const cb = `t=${Date.now()}` // Cache-busting parameter
+    if (designState.apiProvider === 'gnews') {
+      const cat = designState.newsCategory || 'general'
+      url = `https://gnews.io/api/v4/top-headlines?category=${cat}&lang=en&apikey=${designState.apiKey}&${cb}`
+    } else {
+      // NewsAPI
+      const catParam = designState.newsCategory && designState.newsCategory !== 'world' ? `&category=${designState.newsCategory}` : ''
+      url = `https://newsapi.org/v2/top-headlines?language=en${catParam}&apiKey=${designState.apiKey}&${cb}`
+    }
 
     const res = await fetch(url)
     const data = await res.json()
-    if (data.status === 'error') {
-      throw new Error(data.message)
+    
+    if (!res.ok || data.status === 'error' || data.errors) {
+      throw new Error(data.message || (data.errors && data.errors[0]) || 'Failed to fetch news')
     }
-    articles.value = data.articles || []
+    
+    let fetchedArticles = []
+    if (designState.apiProvider === 'gnews') {
+      fetchedArticles = (data.articles || []).map(a => ({
+        ...a,
+        urlToImage: a.image, // GNews uses 'image'
+        source: { name: a.source.name }
+      }))
+    } else {
+      fetchedArticles = data.articles || []
+    }
+
+    // Sort by latest published date to explicitly fulfill 'data terbaru' request
+    fetchedArticles.sort((a,b) => new Date(b.publishedAt) - new Date(a.publishedAt))
+
+    articles.value = fetchedArticles
   } catch (err) {
     error.value = err.message || 'Failed to fetch news'
   } finally {
@@ -48,6 +96,11 @@ const formatDate = (dateString) => {
   const date = new Date(dateString)
   return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }).format(date)
 }
+
+const resetApiKey = () => {
+  localStorage.removeItem('lazarus_api_key')
+  window.location.reload()
+}
 </script>
 
 <template>
@@ -59,45 +112,61 @@ const formatDate = (dateString) => {
       News Source
     </h2>
     <div class="space-y-4">
-      <!-- Search Topic Input -->
-      <div>
-        <label class="block text-xs text-zinc-400 mb-1.5 uppercase tracking-wider font-semibold">Search Topic <span class="text-[10px] text-zinc-500 normal-case font-normal">(Optional)</span></label>
-        <div class="relative group">
-          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search class="h-4 w-4 text-zinc-500 group-focus-within:text-blue-400 transition-colors" />
-          </div>
-          <input 
-            v-model="searchQuery" 
-            @keyup.enter="fetchNews"
-            type="text" 
-            placeholder="e.g. Technology, Apple, Politics"
-            class="w-full bg-zinc-950/50 border border-zinc-800 rounded-lg pl-9 pr-3 py-2.5 text-sm text-zinc-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all placeholder:text-zinc-600"
-          />
-        </div>
-      </div>
       
-      <!-- API Key Input -->
+      <!-- API Provider Source Input -->
       <div>
-        <label class="block text-xs text-zinc-400 mb-1.5 uppercase tracking-wider font-semibold">NewsAPI Key</label>
+        <label class="block text-xs text-zinc-400 mb-1.5 uppercase tracking-wider font-semibold">News Provider</label>
         <div class="relative group">
           <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Key class="h-4 w-4 text-zinc-500 group-focus-within:text-blue-400 transition-colors" />
+            <Globe class="h-4 w-4 text-zinc-500 group-focus-within:text-blue-400 transition-colors" />
           </div>
-          <input 
-            v-model="designState.apiKey" 
-            type="password" 
-            placeholder="Enter your API Key"
-            class="w-full bg-zinc-950/50 border border-zinc-800 rounded-lg pl-9 pr-3 py-2.5 text-sm text-zinc-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all placeholder:text-zinc-600"
-          />
+          <select 
+            v-model="designState.apiProvider" 
+            class="w-full bg-zinc-950/50 border border-zinc-800 rounded-lg pl-9 pr-8 py-2.5 text-sm text-zinc-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all appearance-none"
+          >
+            <option v-for="provider in providers" :key="provider.value" :value="provider.value">{{ provider.label }}</option>
+          </select>
+          <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-zinc-500">
+            <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" fill-rule="evenodd"></path></svg>
+          </div>
         </div>
       </div>
+
+      <!-- Category Filter Input -->
+      <div>
+        <label class="block text-xs text-zinc-400 mb-1.5 uppercase tracking-wider font-semibold">Category <span class="text-[10px] text-zinc-500 normal-case font-normal">(Affects Headlines)</span></label>
+        <div class="relative group">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Filter class="h-4 w-4 text-zinc-500 group-focus-within:text-blue-400 transition-colors" />
+          </div>
+          <select 
+            v-model="designState.newsCategory" 
+            class="w-full bg-zinc-950/50 border border-zinc-800 rounded-lg pl-9 pr-8 py-2.5 text-sm text-zinc-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all appearance-none"
+          >
+            <option v-for="category in categories" :key="category.value" :value="category.value">{{ category.label }}</option>
+          </select>
+          <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-zinc-500">
+            <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" fill-rule="evenodd"></path></svg>
+          </div>
+        </div>
+      </div>
+      <!-- API Key Reset (Hidden but accessible if error occurs) -->
+      <div v-if="error.includes('Key')" class="mt-2 text-center">
+        <button 
+          @click="resetApiKey" 
+          class="text-[10px] text-zinc-500 hover:text-blue-400 underline decoration-dotted transition-colors"
+        >
+          Reset to Config Key
+        </button>
+      </div>
+      <!-- API Key and Search Inputs Removed -->
       <button 
         @click="fetchNews"
         :disabled="loading"
         class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-lg px-4 py-2.5 font-medium flex items-center justify-center gap-2 transition-all duration-300 shadow-[0_0_0_rgba(79,70,229,0)] hover:shadow-[0_4px_12px_rgba(79,70,229,0.3)] disabled:opacity-50 disabled:hover:shadow-none disabled:cursor-not-allowed transform active:scale-[0.98]"
       >
         <Loader2 v-if="loading" class="w-4 h-4 animate-spin text-white/90" />
-        <span>{{ loading ? 'Fetching News...' : 'Fetch Latest News' }}</span>
+        <span>{{ loading ? 'Updating News...' : 'Refresh News' }}</span>
       </button>
       <div v-if="error" class="text-red-400 text-xs mt-2 flex items-center gap-1.5 bg-red-400/10 p-2 rounded border border-red-400/20">
         <div class="w-1 h-1 rounded-full bg-red-400 animate-pulse"></div>
@@ -166,7 +235,7 @@ const formatDate = (dateString) => {
         <Newspaper class="w-8 h-8" />
       </div>
       <h3 class="text-zinc-300 font-medium mb-1">No articles yet</h3>
-      <p class="text-zinc-500 text-sm max-w-[200px]">Enter your API key and fetch the latest news to get started.</p>
+      <p class="text-zinc-500 text-sm max-w-[200px]">Ensure your API Key is set in the <code>.env</code> file (<code>VITE_NEWS_API_KEY</code>).</p>
     </div>
     
   </div>
