@@ -69,9 +69,11 @@ const getRatioLabel = (w, h) => {
       :href="designState.articleUrl" 
       target="_blank" 
       rel="noopener noreferrer"
-      class="text-xs flex items-center gap-1.5 text-zinc-400 hover:text-blue-400 bg-zinc-900 hover:bg-zinc-800 px-2 py-1.5 rounded transition-colors border border-zinc-800 hover:border-zinc-700"
+      class="text-[10px] flex items-center gap-1.5 text-zinc-400 hover:text-blue-400 bg-zinc-900 hover:bg-zinc-800 px-2 py-1.5 rounded transition-colors border border-zinc-800 hover:border-zinc-700 group/link"
       title="Read original article"
     >
+      <ExternalLink class="w-3 h-3 group-hover/link:animate-pulse" />
+      <span>Link Source</span>
     </a>
   </div>
 
@@ -145,13 +147,22 @@ const getRatioLabel = (w, h) => {
         <div class="text-right text-xs text-zinc-500 mt-1">{{ designState.description?.length || 0 }} chars</div>
       </div>
 
-      <div>
+      <div class="space-y-2">
         <label class="block text-xs text-zinc-400 mb-1">Source Name</label>
-        <input 
-          v-model="designState.source" 
-          type="text"
-          class="w-full bg-zinc-950 border border-zinc-700 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500 transition-colors text-white"
-        />
+        <div class="relative">
+          <input 
+            v-model="designState.source" 
+            type="text"
+            class="w-full bg-zinc-950 border border-zinc-700 rounded px-3 py-2.5 text-sm focus:outline-none focus:border-blue-500 transition-colors text-white"
+          />
+          <a v-if="designState.articleUrl" 
+             :href="designState.articleUrl" 
+             target="_blank" 
+             class="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 rounded-md transition-all border border-blue-500/10 hover:border-blue-500/30"
+             title="Open original news">
+            <ExternalLink class="w-3.5 h-3.5" />
+          </a>
+        </div>
       </div>
 
       <div>

@@ -205,10 +205,12 @@ const resetApiKey = () => {
         
         <div class="p-4 flex flex-col flex-1 relative">
           <!-- Floating action icon -->
-          <div class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0 transition-all duration-300">
-            <div class="p-1.5 bg-blue-500 rounded-full text-white shadow-lg">
-              <ArrowUpRight class="w-3 h-3" />
-            </div>
+          <div class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0 transition-all duration-300 z-20">
+            <a :href="article.url" target="_blank" @click.stop 
+               class="p-2 bg-blue-500 hover:bg-blue-400 rounded-full text-white shadow-lg transition-colors flex items-center justify-center"
+               title="Open Source">
+              <ArrowUpRight class="w-4 h-4" />
+            </a>
           </div>
 
           <div class="flex items-center gap-2 mb-2">
