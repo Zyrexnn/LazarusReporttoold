@@ -21,7 +21,8 @@ watch(() => designState.newsCategory, () => {
 
 const providers = [
   { value: 'newsapi', label: 'NewsAPI.org (Default)' },
-  { value: 'gnews', label: 'GNews.io (Geopolitics/World)' }
+  { value: 'gnews', label: 'GNews.io (Geopolitics/World)' },
+  { value: 'custom', label: 'Custom API / URL' }
 ];
 
 const categories = [
@@ -36,8 +37,8 @@ const categories = [
 ];
 
 const fetchNews = async () => {
-  if (!designState.apiKey) {
-    error.value = 'API Key is required from .env file (VITE_NEWS_API_KEY)'
+  if (designState.apiProvider !== 'custom' && !designState.apiKey) {
+    error.value = 'API Key is required for this provider'
     return
   }
   loading.value = true
@@ -48,6 +49,13 @@ const fetchNews = async () => {
     if (designState.apiProvider === 'gnews') {
       const cat = designState.newsCategory || 'general'
       url = `https://gnews.io/api/v4/top-headlines?category=${cat}&lang=en&apikey=${designState.apiKey}&${cb}`
+    } else if (designState.apiProvider === 'custom') {
+      url = designState.customUrl
+      if (!url) {
+        error.value = 'Please provide a custom URL'
+        loading.value = false
+        return
+      }
     } else {
       // NewsAPI
       const catParam = designState.newsCategory && designState.newsCategory !== 'world' ? `&category=${designState.newsCategory}` : ''
@@ -68,6 +76,9 @@ const fetchNews = async () => {
         urlToImage: a.image, // GNews uses 'image'
         source: { name: a.source.name }
       }))
+    } else if (designState.apiProvider === 'custom') {
+      // For custom URLs, we try to find an array of articles
+      fetchedArticles = data.articles || data.results || (Array.isArray(data) ? data : [])
     } else {
       fetchedArticles = data.articles || []
     }
@@ -130,6 +141,23 @@ const resetApiKey = () => {
             <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" fill-rule="evenodd"></path></svg>
           </div>
         </div>
+      </div>
+
+      <!-- Custom URL Input -->
+      <div v-if="designState.apiProvider === 'custom'">
+        <label class="block text-xs text-zinc-400 mb-1.5 uppercase tracking-wider font-semibold">Custom API Endpoint URL</label>
+        <div class="relative group">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <ArrowUpRight class="h-4 w-4 text-zinc-500 group-focus-within:text-blue-400 transition-colors" />
+          </div>
+          <input 
+            v-model="designState.customUrl" 
+            type="text"
+            placeholder="https://api.example.com/v1/news"
+            class="w-full bg-zinc-950/50 border border-zinc-800 rounded-lg pl-9 pr-4 py-2.5 text-sm text-zinc-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all"
+          />
+        </div>
+        <p class="text-[10px] text-zinc-500 mt-1 italic">Expected JSON format: { "articles": [...] } or { "results": [...] }</p>
       </div>
 
       <!-- Category Filter Input -->

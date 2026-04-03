@@ -29,12 +29,8 @@ const defaultState = {
   canvasHeight: 1350,
   canvasRatio: '4:5',
   apiKey: import.meta.env.VITE_NEWS_API_KEY || '',
-  apiProvider: 'newsapi', // 'newsapi' or 'gnews'
-  newsCategory: 'general',
-  // video export state
-  videoDuration: 5,
-  videoFPS: 30,
-  isExportingVideo: false
+  isExportingVideo: false,
+  customUrl: ''
 };
 
 // initialize from localStorage for persistent fields
@@ -48,13 +44,15 @@ const savedApiKey = getInitialApiKey();
 const savedLogo = localStorage.getItem('lazarus_logo') || '';
 const savedApiProvider = localStorage.getItem('lazarus_api_provider') || 'newsapi';
 const savedNewsCategory = localStorage.getItem('lazarus_news_category') || 'general';
+const savedCustomUrl = localStorage.getItem('lazarus_custom_url') || '';
 
 export const designState = reactive({
   ...defaultState,
   apiKey: savedApiKey,
   logoBase64: savedLogo,
   apiProvider: savedApiProvider,
-  newsCategory: savedNewsCategory
+  newsCategory: savedNewsCategory,
+  customUrl: savedCustomUrl
 });
 
 // Watch persistent fields
@@ -80,5 +78,11 @@ watch(
   () => designState.newsCategory,
   (newVal) => {
     localStorage.setItem('lazarus_news_category', newVal);
+  }
+);
+watch(
+  () => designState.customUrl,
+  (newVal) => {
+    localStorage.setItem('lazarus_custom_url', newVal);
   }
 );
